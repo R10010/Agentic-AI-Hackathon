@@ -6,29 +6,29 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 
 # -----------------------------
-# 🔐 SECURITY & CONFIGURATION
+# SECURITY & CONFIGURATION
 # -----------------------------
-# Load environment variables from the .env file so API keys stay out of GitHub!
+
 load_dotenv()
 
 app = Flask(__name__)
 
-# Initialize AI Configuration
+
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
-    # Using 1.5 Flash for ultra-fast hackathon response times
+ 
     model = genai.GenerativeModel('gemini-1.5-flash')
 else:
-    print("⚠️ WARNING: GEMINI_API_KEY not found in .env. Running in Fallback Mode.")
+    print(" WARNING: GEMINI_API_KEY not found in .env. Running in Fallback Mode.")
     model = None
 
 
 # -----------------------------
-# 🛡️ HEURISTIC FALLBACK ENGINE
+# HEURISTIC FALLBACK ENGINE
 # -----------------------------
-# Judges love fallback mechanisms. If the API fails or rate-limits, the app survives.
+
 def heuristic_fallback(logs):
     logs = logs.lower()
     score = 0
@@ -64,15 +64,15 @@ def heuristic_fallback(logs):
             "Restart failing backend services",
             "Check network latency between microservices"
         ],
-        "alert": "🚨 PagerDuty ALERT triggered" if severity == "CRITICAL" else "ℹ️ Logged in dashboard"
+        "alert": "PagerDuty ALERT triggered" if severity == "CRITICAL" else "ℹ️ Logged in dashboard"
     }
 
 
 # -----------------------------
-# 🧠 CORE AI OBSERVBILITY ENGINE
+#  CORE AI OBSERVBILITY ENGINE
 # -----------------------------
 def analyze_logs_with_ai(logs):
-    # If no API key is provided, bypass directly to fallback
+  
     if not model:
         return heuristic_fallback(logs)
 
@@ -90,7 +90,7 @@ def analyze_logs_with_ai(logs):
         "root_cause": "<A sharp, 1-sentence technical explanation of the failure>",
         "clusters": ["<Grouping 1 -> X occurrences>", "<Grouping 2 -> Y occurrences>"],
         "fixes": ["<Actionable fix 1>", "<Actionable fix 2>", "<Actionable fix 3>"],
-        "alert": "<A simulated alert string, e.g., '🚨 PagerDuty ALERT triggered' or '📢 Slack DevOps channel notified'>"
+        "alert": "<A simulated alert string, e.g., ' PagerDuty ALERT triggered' or ' Slack DevOps channel notified'>"
     }}
     """
     
@@ -98,7 +98,7 @@ def analyze_logs_with_ai(logs):
         response = model.generate_content(prompt)
         ai_text = response.text.strip()
         
-        # Clean up markdown JSON formatting if Gemini adds it
+   
         if ai_text.startswith("```json"):
             ai_text = ai_text[7:-3]
         elif ai_text.startswith("```"):
@@ -110,12 +110,12 @@ def analyze_logs_with_ai(logs):
         return result
         
     except Exception as e:
-        print(f"❌ AI Generation Failed: {e}. Switching to heuristic fallback.")
+        print(f" AI Generation Failed: {e}. Switching to heuristic fallback.")
         return heuristic_fallback(logs)
 
 
 # -----------------------------
-# 🏠 ROUTES
+# ROUTES
 # -----------------------------
 @app.route("/")
 def home():
@@ -140,7 +140,7 @@ def generate_fix():
     logs = data.get("logs", "")
 
     if not model:
-        # Fallback script if no API key
+        
         script = "#!/bin/bash\necho 'Restarting backend API services...'\nsudo systemctl restart api-gateway\necho 'Done.'"
         return jsonify({"script": script})
 
@@ -157,21 +157,21 @@ def generate_fix():
         response = model.generate_content(prompt)
         script = response.text.strip()
         
-        # Cleanup markdown formatting if present
+   
         if script.startswith("```bash"): 
             script = script[7:-3]
         elif script.startswith("```"): 
             script = script[3:-3]
             
     except Exception as e:
-        print(f"❌ Auto-Fix AI Failed: {e}")
+        print(f"Auto-Fix AI Failed: {e}")
         script = "#!/bin/bash\n# Fallback Script\nsudo systemctl restart backend\n"
 
     return jsonify({"script": script.strip()})
 
 
 # -----------------------------
-# 🚀 SERVER LAUNCH
+# SERVER LAUNCH
 # -----------------------------
 if __name__ == "__main__":
     app.run(debug=True)
